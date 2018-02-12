@@ -1,7 +1,6 @@
 package bitcask
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"sort"
@@ -17,7 +16,7 @@ func TestPutGet(t *testing.T) {
 		os.Remove("active.dat")
 	}()
 
-	writer := bufio.NewWriter(active)
+	writer := newBufWriter(active, 0)
 
 	for i := 0; i < 100000; i++ {
 		key := strconv.Itoa(i)
@@ -41,7 +40,7 @@ func TestLoadFromData(t *testing.T) {
 		os.Remove("active.dat")
 	}()
 
-	writer := bufio.NewWriter(active)
+	writer := newBufWriter(active, 0)
 	num := 100000
 
 	for i := 0; i < num; i++ {

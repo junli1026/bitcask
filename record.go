@@ -34,19 +34,21 @@ func serialize(r *record) ([]byte, error) {
 
 func deserialize(data []byte) (*record, error) {
 	crc := binary.LittleEndian.Uint32(data[0:4])
-	if crc != crc32.ChecksumIEEE(data[4:]) {
-		// log error
-		return nil, errors.New("crc mistatch")
-	}
 
 	tstamp := binary.LittleEndian.Uint64(data[4:12])
 	keySz := binary.LittleEndian.Uint32(data[12:16])
 	valSz := binary.LittleEndian.Uint32(data[16:20])
+	hsz := uint32(recordHeaderSz)
+
+	if crc != crc32.ChecksumIEEE(data[4:hsz+keySz+valSz]) {
+		// log error
+		return nil, errors.New("crc mistatch")
+	}
 
 	r := &record{}
 	r.tstamp = int64(tstamp)
-	r.key = string(data[20 : 20+keySz])
-	r.value = data[20+keySz : 20+keySz+valSz]
+	r.key = string(data[hsz : hsz+keySz])
+	r.value = data[hsz+keySz : hsz+keySz+valSz]
 	return r, nil
 }
 

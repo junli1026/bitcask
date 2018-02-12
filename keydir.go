@@ -76,7 +76,7 @@ func (kd *keydir) get(f *os.File, key string) ([]byte, error) {
 	return r.value, err
 }
 
-func (kd *keydir) put(fid int, f *os.File, writer *bufio.Writer, key string, value []byte) error {
+func (kd *keydir) put(fid int, f *os.File, writer *bufwriter, key string, value []byte) error {
 	r := &record{
 		tstamp: 0,
 		key:    key,
@@ -100,7 +100,6 @@ func (kd *keydir) put(fid int, f *os.File, writer *bufio.Writer, key string, val
 	if _, err = writer.Write(block); err != nil {
 		return err
 	}
-	writer.Flush()
 
 	kd.table[key] = &entry{
 		fid:       fid,

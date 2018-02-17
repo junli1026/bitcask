@@ -33,6 +33,21 @@ func TestOpen(t *testing.T) {
 	fmt.Println(strconv.Itoa(c))
 }
 
+func TestPutDelete(t *testing.T) {
+	bc := Open("./", 0)
+	defer bc.Close()
+	for i := 0; i < 100000; i++ {
+		key := strconv.Itoa(i)
+		value := "value_" + key
+		bc.Put(key, []byte(value))
+	}
+	bc.Delete("0")
+	v, err := bc.Get("0")
+	if v != nil || err != nil {
+		t.Fail()
+	}
+}
+
 func BenchmarkPutGet100000(b *testing.B) {
 	bc := Open("./", 0)
 	defer bc.Close()

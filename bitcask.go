@@ -16,6 +16,7 @@ const (
 	dataFileFormat = "%d.dat"
 	hintFileFormat = "%d.hint"
 	activeFile     = "active.dat"
+	tombstone      = "\r\n"
 )
 
 func check(err error) {
@@ -145,11 +146,7 @@ func (bc *Bitcask) Get(key string) ([]byte, error) {
 	return bc.keydir.get(f, key)
 }
 
-// Put set the value
-func (bc *Bitcask) Put(key string, value []byte) error {
-	bc.rwlock.Lock()
-	defer bc.rwlock.Unlock()
-
+func (bc *Bitcask) set(key string, value []byte) error {
 	var active, data *os.File
 	active = bc.buckets[bc.activeID]
 	fileinfo, err := active.Stat()
@@ -172,6 +169,25 @@ func (bc *Bitcask) Put(key string, value []byte) error {
 		bc.writer = newBufWriter(active, bc.bufSz)
 	}
 	return bc.keydir.put(bc.activeID, active, bc.writer, key, value)
+}
+
+// Put set the value
+func (bc *Bitcask) Put(key string, value []byte) error {
+	bc.rwlock.Lock()
+	defer bc.rwlock.Unlock()
+	return bc.set(key, value)
+}
+
+// Delete for delete an entry
+func (bc *Bitcask) Delete(key string) error {
+	bc.rwlock.Lock()
+	defer bc.rwlock.Unlock()
+	err := bc.set(key, []byte(tombstone))
+	if err != nil {
+		return err
+	}
+	delete(bc.keydir.table, key)
+	return nil
 }
 
 // Close for close bc

@@ -39,11 +39,15 @@ func loadFromData(fid int, f *os.File) (*keydir, error) {
 		}
 		key := record.key
 		value := record.value
-		kd.table[key] = &entry{
-			fid:       fid,
-			valsz:     uint32(len(value)),
-			valpos:    pos,
-			timestamp: time.Now().Unix(),
+		if string(value) == tombstone {
+			delete(kd.table, key)
+		} else {
+			kd.table[key] = &entry{
+				fid:       fid,
+				valsz:     uint32(len(value)),
+				valpos:    pos,
+				timestamp: time.Now().Unix(),
+			}
 		}
 		pos += int64(recordHeaderSz) + int64(len([]byte(key))) + int64(len(value))
 	}
